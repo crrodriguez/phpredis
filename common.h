@@ -602,12 +602,13 @@ typedef enum _PUBSUB_TYPE {
         REDIS_PROCESS_RESPONSE_CLOSURE(resp_func, ctx) \
     }
 
-#define REDIS_STREAM_CLOSE_MARK_FAILED(redis_sock) \
+#define REDIS_STREAM_CLOSE(redis_sock) do { \
     redis_stream_close(redis_sock TSRMLS_CC); \
     redis_sock->stream = NULL; \
     redis_sock->mode = ATOMIC; \
-    redis_sock->status = REDIS_SOCK_STATUS_FAILED; \
-    redis_sock->watching = 0
+    redis_sock->status = REDIS_SOCK_STATUS_DISCONNECTED; \
+    redis_sock->watching = 0; \
+} while (0)
 
 /* Extended SET argument detection */
 #define IS_EX_ARG(a) \

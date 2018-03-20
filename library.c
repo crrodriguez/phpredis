@@ -169,7 +169,7 @@ redis_check_eof(RedisSock *redis_sock, int no_throw TSRMLS_DC)
         /* Success */
         return 0;
     } else if (redis_sock->mode == MULTI || redis_sock->watching) {
-        REDIS_STREAM_CLOSE_MARK_FAILED(redis_sock);
+        REDIS_STREAM_CLOSE(redis_sock);
         if (!no_throw) {
             zend_throw_exception(redis_exception_ce,
                 "Connection lost and socket is in MULTI/watching mode",
@@ -210,7 +210,8 @@ redis_check_eof(RedisSock *redis_sock, int no_throw TSRMLS_DC)
     }
     /* close stream if still here */
     if (redis_sock->stream) {
-        REDIS_STREAM_CLOSE_MARK_FAILED(redis_sock);
+        REDIS_STREAM_CLOSE(redis_sock);
+        redis_sock->status = REDIS_SOCK_STATUS_FAILED;
     }
     if (!no_throw) {
         zend_throw_exception(redis_exception_ce, "Connection lost", 0 TSRMLS_CC);
@@ -2045,7 +2046,7 @@ redis_sock_gets(RedisSock *redis_sock, char *buf, int buf_size,
                            == NULL)
     {
         // Close, put our socket state into error
-        REDIS_STREAM_CLOSE_MARK_FAILED(redis_sock);
+        REDIS_STREAM_CLOSE(redis_sock);
 
         // Throw a read error exception
         zend_throw_exception(redis_exception_ce, "read error on connection",
